@@ -1,0 +1,53 @@
+﻿<Window
+    Height="450"
+    Title="Chat Server"
+    Width="800"
+    mc:Ignorable="d"
+    x:Class="AOSSocketChatWPF.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:AOSSocketChatWPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <Grid DockPanel.Dock="Bottom" MinHeight="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBox FontSize="16" Name="MessageBox" />
+            <Button
+                Click="SendButton_OnClick"
+                Grid.Column="1"
+                Name="SendButton">
+                Send
+            </Button>
+        </Grid>
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="3*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Click="StartServerButton_OnClick"
+                Grid.Column="1"
+                Name="StartServerButton">
+                StartServer
+            </Button>
+            <StackPanel>
+                <Label>Number of clients:</Label>
+                <TextBox Name="ClientNumberBox" />
+            </StackPanel>
+
+        </Grid>
+        <Border Padding="5">
+            <ScrollViewer>
+                <TextBlock
+                    FontSize="16"
+                    Name="ChatBox"
+                    Text=""
+                    TextWrapping="Wrap" />
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>
