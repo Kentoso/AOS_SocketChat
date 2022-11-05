@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -25,7 +26,8 @@ namespace AOSSocketChatWPF
         private IPEndPoint _endPoint;
         public MainWindow()
         {
-            IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+            // IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+            IPAddress ipAddress = IPAddress.Parse("26.43.116.76");
             int variant = 4;
             _endPoint = new(ipAddress, 1025 + variant);
             Listener = new Socket(_endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -46,8 +48,8 @@ namespace AOSSocketChatWPF
             {
                 Listener.Bind(_endPoint);
                 Listener.Listen(100);
+                await StartServer();
             }
-            await StartServer();
         }
         
         private async Task Listen()
@@ -66,11 +68,64 @@ namespace AOSSocketChatWPF
                 }
                 var received = await Task.WhenAny(tasks);
                 var response = Encoding.UTF8.GetString(buffer, 0, received.Result);
-                var message = $"{Nicknames[tasks.IndexOf(received)]}: {response}";
+                if (response.Length == 0) return;
+                if (response[0] == 'c')
+                {
+                    var messageCountResponse = response;
+                    int messageCount;
+                    if (!Int32.TryParse(new string(messageCountResponse.Skip(1).ToArray()), out messageCount)) continue;
+                    var userIndex = tasks.IndexOf(received);
+                    List<byte> nicknameBytes = new List<byte>() {(byte) 'n'};
+                    nicknameBytes.AddRange(Encoding.UTF8.GetBytes(Nicknames[userIndex]));
+                    var sendMessageCountTasks = Clients.Select(c => c.SendAsync(buffer, SocketFlags.None));
+                    await Task.WhenAll(sendMessageCountTasks);
+                    
+                    //var sTask = Clients[userIndex].SendAsync(nicknameBytesArr, SocketFlags.None);
+                    //AnnounceToChat($"SENDING NICKNAME: {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}");
+                    //await sTask;
+                    //AnnounceToChat($"SENT NICKNAME: {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}");
+                    // await Task.Delay(1);
+                    
+                    // var confirmationBuffer = new byte[20];
+                    // var nicknameConfirmationTasks = Clients.Select(c => c.ReceiveAsync(confirmationBuffer, SocketFlags.None));
+                    // var a = await Task.WhenAll(nicknameConfirmationTasks);
+
+                    // foreach (var client in Clients)   
+                    // {
+                    //     var confirmationBuffer = new byte[20];
+                    //     var a = await client.ReceiveAsync(confirmationBuffer, SocketFlags.None);
+                    //     PrintToChat(Encoding.UTF8.GetString(confirmationBuffer, 0, a));
+                    // }
+                    for (int i = 0; i < messageCount; i++)
+                    {
+                        var messageContentBytes = new byte[21];
+                        var n = await Clients[userIndex].ReceiveAsync(messageContentBytes, SocketFlags.None);
+                        // var messageContent = Encoding.UTF8.GetString(messageContentBytes, 0, n);
+                        // var message = $"{Nicknames[userIndex]}: {messageContent}";
+                        // var messageBytes = Encoding.UTF8.GetBytes(message, 0, message.Length);
+                        
+                        var sendMessagesTasks = Clients.Select(c => c.SendAsync(messageContentBytes, SocketFlags.None));
+                        await Task.WhenAll(sendMessagesTasks);
+                        // sTask = Clients[userIndex].SendAsync(messageContentBytes, SocketFlags.None);
+                        // AnnounceToChat(
+                        //     $"SENDING MESSAGE: {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}");
+                        // await sTask;
+                        // AnnounceToChat(
+                        //     $"SENT MESSAGE: {DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}");
+                        // var message = $"{Nicknames[userIndex]}: {response}";
+                    }
+                    var nicknameBytesArr = nicknameBytes.ToArray();
+                    var sendNicknameTasks = Clients.Select(c => c.SendAsync(nicknameBytesArr, SocketFlags.None));
+                    await Task.WhenAll(sendNicknameTasks);
+                }
+                
+                // var userIndex = tasks.IndexOf(received);
+                // var message = $"{Nicknames[userIndex]}: {response}";
                 // PrintToChat(response);
-                var messageBytes = Encoding.UTF8.GetBytes(message, 0, message.Length);
-                var sendMessagesTasks = Clients.Select(c => c.SendAsync(messageBytes, SocketFlags.None));
-                await Task.WhenAll(sendMessagesTasks);
+                
+                // var messageBytes = Encoding.UTF8.GetBytes(message, 0, message.Length);
+                // var sendMessagesTasks = Clients.Select(c => c.SendAsync(messageBytes, SocketFlags.None));
+                // await Task.WhenAll(sendMessagesTasks);
             }
         }
 
@@ -84,7 +139,7 @@ namespace AOSSocketChatWPF
                 var client = await Listener.AcceptAsync();
                 var buffer = new byte[256];
                 var received = await client.ReceiveAsync(buffer, SocketFlags.None);
-                var clientNickname = Encoding.UTF8.GetString(buffer, 0, received);
+                var clientNickname = Encoding.UTF8.GetString(buffer.Skip(1).ToArray(), 0, received - 1);
                 Clients.Add(client);
                 Nicknames.Add(clientNickname);
                 PrintToChat($"{i + 1} / {clientNumber}");

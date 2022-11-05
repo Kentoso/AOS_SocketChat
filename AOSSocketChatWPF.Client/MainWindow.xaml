@@ -1,4 +1,5 @@
 ﻿<Window
+    Closing="MainWindow_OnClosing"
     Height="450"
     Title="MainWindow"
     Width="800"
