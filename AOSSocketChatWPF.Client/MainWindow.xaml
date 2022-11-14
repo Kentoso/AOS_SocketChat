@@ -1,7 +1,7 @@
 ﻿<Window
     Closing="MainWindow_OnClosing"
     Height="450"
-    Title="MainWindow"
+    Title="Chat Client"
     Width="800"
     mc:Ignorable="d"
     x:Class="AOSSocketChatWPF.Client.MainWindow"
@@ -24,7 +24,7 @@
                 Send
             </Button>
         </Grid>
-        <Grid DockPanel.Dock="Top">
+        <Grid DockPanel.Dock="Top" Name="ConnectionContainer">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />

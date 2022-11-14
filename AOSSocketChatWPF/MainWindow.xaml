@@ -1,4 +1,5 @@
 ﻿<Window
+    Closing="MainWindow_OnClosing"
     Height="450"
     Title="Chat Server"
     Width="800"
@@ -23,22 +24,26 @@
                 Send
             </Button>
         </Grid>
-        <Grid DockPanel.Dock="Top">
+        <Grid DockPanel.Dock="Top" Name="ServerStartContainer">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
             <Button
                 Click="StartServerButton_OnClick"
-                Grid.Column="1"
+                Grid.Column="2"
                 Name="StartServerButton">
-                StartServer
+                Start server
             </Button>
             <StackPanel>
                 <Label>Number of clients:</Label>
                 <TextBox Name="ClientNumberBox" />
             </StackPanel>
-
+            <StackPanel Grid.Column="1">
+                <Label>Server IP:</Label>
+                <TextBox Name="ServerIpBox" />
+            </StackPanel>
         </Grid>
         <Border Padding="5">
             <ScrollViewer>
